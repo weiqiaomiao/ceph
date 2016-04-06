@@ -52,7 +52,7 @@ See `User Management`_ for additional details on Ceph authentication.
 	sudo mv ceph.client.radosgw.keyring /etc/ceph/ceph.client.radosgw.keyring
 
 
-   .. note:: The 5th step is optional if ``admin node`` is the ``gateway host``.
+   .. note:: The second step is optional if ``admin node`` is the ``gateway host``.
 
 Create Pools
 ============
