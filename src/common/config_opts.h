@@ -271,6 +271,7 @@ OPTION(mon_crush_min_required_version, OPT_STR, "firefly")
 OPTION(mon_warn_on_crush_straw_calc_version_zero, OPT_BOOL, true) // warn if crush straw_calc_version==0
 OPTION(mon_warn_on_osd_down_out_interval_zero, OPT_BOOL, true) // warn if 'mon_osd_down_out_interval == 0'
 OPTION(mon_warn_on_cache_pools_without_hit_sets, OPT_BOOL, true)
+OPTION(mon_warn_on_no_sortbitwise, OPT_BOOL, true)  // warn when sortbitwise not set
 OPTION(mon_min_osdmap_epochs, OPT_INT, 500)
 OPTION(mon_max_pgmap_epochs, OPT_INT, 500)
 OPTION(mon_max_log_epochs, OPT_INT, 500)
@@ -869,6 +870,7 @@ OPTION(osd_mon_shutdown_timeout, OPT_DOUBLE, 5)
 
 OPTION(osd_max_object_size, OPT_U64, 100*1024L*1024L*1024L) // OSD's maximum object size
 OPTION(osd_max_object_name_len, OPT_U32, 2048) // max rados object name len
+OPTION(osd_max_object_namespace_len, OPT_U32, 256) // max rados object namespace len
 OPTION(osd_max_attr_name_len, OPT_U32, 100)    // max rados attr name len; cannot go higher than 100 chars for file system backends
 OPTION(osd_max_attr_size, OPT_U64, 0)
 
@@ -1025,6 +1027,18 @@ OPTION(filestore_max_inline_xattrs, OPT_U32, 0)	//Override
 OPTION(filestore_max_inline_xattrs_xfs, OPT_U32, 10)
 OPTION(filestore_max_inline_xattrs_btrfs, OPT_U32, 10)
 OPTION(filestore_max_inline_xattrs_other, OPT_U32, 2)
+
+// max xattr value size
+OPTION(filestore_max_xattr_value_size, OPT_U32, 0)	//Override
+OPTION(filestore_max_xattr_value_size_xfs, OPT_U32, 64<<10)
+OPTION(filestore_max_xattr_value_size_btrfs, OPT_U32, 64<<10)
+// ext4 allows 4k xattrs total including some smallish extra fields and the
+// keys.  We're allowing 2 512 inline attrs in addition some some filestore
+// replay attrs.  After accounting for those, we still need to fit up to
+// two attrs of this value.  That means we need this value to be around 1k
+// to be safe.  This is hacky, but it's not worth complicating the code
+// to work around ext4's total xattr limit.
+OPTION(filestore_max_xattr_value_size_other, OPT_U32, 1<<10)
 
 OPTION(filestore_sloppy_crc, OPT_BOOL, false)         // track sloppy crcs
 OPTION(filestore_sloppy_crc_block_size, OPT_INT, 65536)

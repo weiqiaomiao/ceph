@@ -398,7 +398,8 @@ int rgw_build_bucket_policies(RGWRados* store, struct req_state* s)
  * only_bucket: If true, reads the bucket ACL rather than the object ACL.
  * Returns: 0 on success, -ERR# otherwise.
  */
-static int rgw_build_object_policies(RGWRados *store, struct req_state *s, bool prefetch_data)
+int rgw_build_object_policies(RGWRados *store, struct req_state *s,
+			      bool prefetch_data)
 {
   int ret = 0;
 
@@ -2994,7 +2995,8 @@ void RGWDeleteObj::execute()
     return;
   }
 
-  rgw_obj obj(s->bucket, s->object);
+  rgw_obj obj(s->bucket, s->object.name);
+  obj.set_instance(s->object.instance);
   map<string, bufferlist> attrs;
 
 

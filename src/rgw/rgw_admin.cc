@@ -2293,7 +2293,6 @@ int main(int argc, char **argv)
     } else if (ceph_argparse_witharg(args, i, &val, "--zone-new-name", (char*)NULL)) {
       zone_new_name = val;
     } else if (ceph_argparse_witharg(args, i, &val, "--endpoints", (char*)NULL)) {
-      list<string>::iterator iter;
       get_str_list(val, endpoints);
     } else if (ceph_argparse_witharg(args, i, &val, "--source-zone", (char*)NULL)) {
       source_zone_name = val;
@@ -2308,7 +2307,7 @@ int main(int argc, char **argv)
     tenant = user_id.tenant;
   } else {
     if (user_id.empty()) {
-      cerr << "ERROR: --tennant is set, but there's no user ID" << std::endl;
+      cerr << "ERROR: --tenant is set, but there's no user ID" << std::endl;
       return EINVAL;
     }
     user_id.tenant = tenant;
@@ -2453,7 +2452,7 @@ int main(int argc, char **argv)
     case OPT_PERIOD_DELETE:
       {
 	if (period_id.empty()) {
-	  cerr << "missing realm name or id" << std::endl;
+	  cerr << "missing period id" << std::endl;
 	  return -EINVAL;
 	}
 	RGWPeriod period(period_id);
@@ -3315,11 +3314,16 @@ int main(int argc, char **argv)
 	if(zone.realm_id.empty()) {
 	  RGWRealm realm(realm_id, realm_name);
 	  int ret = realm.init(g_ceph_context, store);
-	  if (ret < 0) {
+	  if (ret < 0 && ret != -ENOENT) {
 	    cerr << "failed to init realm: " << cpp_strerror(-ret) << std::endl;
 	    return -ret;
 	  }
 	  zone.realm_id = realm.get_id();
+	}
+
+	if( !zone_name.empty() && !zone.get_name().empty() && zone.get_name() != zone_name) {
+	  cerr << "Error: zone name" << zone_name << " is different than the zone name " << zone.get_name() << " in the provided json " << std::endl;
+	  return -EINVAL;
 	}
 
         if (zone.get_name().empty()) {
@@ -3329,11 +3333,6 @@ int main(int argc, char **argv)
             return EINVAL;
           }
         }
-
-	if(zone.get_name() != zone_name) {
-	  cerr << "Error: zone name" << zone_name << " is different than the zone name " << zone.get_name() << " in the provided json " << std::endl;
-	  return -EINVAL;
-	}
 
         zone_name = zone.get_name();
 

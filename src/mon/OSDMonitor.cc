@@ -2564,7 +2564,8 @@ void OSDMonitor::send_incremental(epoch_t first,
   }
 
   while (first <= osdmap.get_epoch()) {
-    epoch_t last = MIN(first + g_conf->osd_map_message_max, osdmap.get_epoch());
+    epoch_t last = MIN(first + g_conf->osd_map_message_max - 1,
+		       osdmap.get_epoch());
     MOSDMap *m = build_incremental(first, last);
 
     if (req) {
@@ -2953,6 +2954,16 @@ void OSDMonitor::get_health(list<pair<health_status_t,string> >& summary,
 	ss << problem_cache_pools << " cache pools are missing hit_sets";
 	summary.push_back(make_pair(HEALTH_WARN, ss.str()));
       }
+    }
+
+    // Not using 'sortbitwise' and should be?
+    if (g_conf->mon_warn_on_no_sortbitwise &&
+	!osdmap.test_flag(CEPH_OSDMAP_SORTBITWISE) &&
+	(osdmap.get_features(CEPH_ENTITY_TYPE_OSD, NULL) &
+	 CEPH_FEATURE_OSD_BITWISE_HOBJ_SORT)) {
+      ostringstream ss;
+      ss << "no legacy OSD present but 'sortbitwise' flag is not set";
+      summary.push_back(make_pair(HEALTH_WARN, ss.str()));
     }
 
     // Warn if 'mon_osd_down_out_interval' is set to zero.
