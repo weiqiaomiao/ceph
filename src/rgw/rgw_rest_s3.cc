@@ -429,10 +429,12 @@ void RGWGetUsage_ObjStore_S3::send_response()
        formatter->dump_int("SuccessfulOps", total_usage.successful_ops);
        formatter->close_section(); // total 
        formatter->close_section(); // user
-     } 
+     }
+     formatter->open_object_section("Stats"); 
      formatter->dump_int("TotalBytes", header.stats.total_bytes);
      formatter->dump_int("TotalBytesRounded", header.stats.total_bytes_rounded);
      formatter->dump_int("TotalEntries", header.stats.total_entries);
+     formatter->close_section(); //Stats
      formatter->close_section(); // summary
    }
    formatter->close_section(); // usage
